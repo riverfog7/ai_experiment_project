@@ -742,6 +742,7 @@ dataset/
 
 .hf_models/
 dataset
+.temp/
 
 wandb/
 
