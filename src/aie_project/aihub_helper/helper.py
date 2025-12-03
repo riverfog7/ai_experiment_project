@@ -87,11 +87,11 @@ class AIHubHelper:
             transform: Optional[Callable[[List[Path]], None]]
     ):
         try:
-            # 1. Extract TAR & Merge Parts
             merged = extract_and_merge(tar_path=tar_path, dest_dir=output_dir)
+            if tar_path.exists():
+                tar_path.unlink()
 
             extracted_files = []
-
             if unzip:
                 for file_path in merged:
                     if file_path.suffix.lower() == '.zip':
@@ -105,9 +105,6 @@ class AIHubHelper:
                         extracted_files.append(file_path)
             else:
                 extracted_files = merged
-
-            if tar_path.exists():
-                tar_path.unlink()
 
             if transform and extracted_files:
                 transform(extracted_files)
