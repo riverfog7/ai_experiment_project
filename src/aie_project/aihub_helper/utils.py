@@ -73,6 +73,7 @@ def parse_aihub_tree(raw_text: str) -> AIHubDataset:
 
 
 def extract_and_merge(tar_path: Union[str, Path], dest_dir: Union[str, Path]) -> List[Path]:
+    # Function to extract tarballs and merge all .part* files
     tar_path = Path(tar_path)
     dest_dir = Path(dest_dir)
 
@@ -96,6 +97,7 @@ def extract_and_merge(tar_path: Union[str, Path], dest_dir: Union[str, Path]) ->
     merged_files = []
 
     for target_file, parts in merge_tasks.items():
+        # sort via offset (integer after .part)
         parts.sort(key=lambda x: x[0])
 
         with open(target_file, 'wb') as outfile:
@@ -110,6 +112,7 @@ def extract_and_merge(tar_path: Union[str, Path], dest_dir: Union[str, Path]) ->
 
 
 def unzip_file(zip_path: Union[str, Path], dest_dir: Union[str, Path] = None, delete_zip: bool = True, create_directory: bool = True) -> List[Path]:
+    # Function to unzip file
     zip_path = Path(zip_path)
     if dest_dir is None:
         dest_dir = zip_path.parent
