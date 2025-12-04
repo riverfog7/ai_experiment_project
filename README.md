@@ -35,8 +35,8 @@ cd ai_experiment_project
   --convert_to image_classification \
   --cache_dir ./.temp
 ```
-./scripts/convert_hf.py \
-  ./datasets \
-  /Volumes/SSD/Datasets/recyclables_image_classification \
-  --convert_to image_classification \
-  --cache_dir /Volumes/SSD/Cache
+
+6. Or download the pre-converted huggingface dataset
+```bash
+./scripts/preload_dataset.sh
+```
