@@ -13,6 +13,7 @@ description = "Python library for the ai experiment project code."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "datasets>=4.4.1",
     "dotenv>=0.9.9",
     "pydantic>=2.12.5",
     "torch>=2.9.1",
