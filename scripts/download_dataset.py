@@ -1,11 +1,11 @@
 #!/usr/bin/env -S uv run
 
+import argparse
 from pathlib import Path
 from typing import List
 
 import dotenv
 from tqdm import tqdm
-import argparse
 
 from aie_project.aihub_helper import AIHubHelper
 from aie_project.aihub_helper.image_utils import resize_images_parallel
