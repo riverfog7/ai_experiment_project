@@ -32,9 +32,9 @@ def download(dataset_id: int, output_dir: Path, log_file: Path):
     val_labels = val_ds[1]
     val_label_keys = [e.file_sn for e in val_labels]
 
-    # helper.download_and_extract_file(dataset_key=dataset_id, file_sn=train_label_keys, output_dir=output_dir,
-    #                                  unzip=False)
-    # helper.download_and_extract_file(dataset_key=dataset_id, file_sn=val_label_keys, output_dir=output_dir, unzip=False)
+    helper.download_and_extract_file(dataset_key=dataset_id, file_sn=train_label_keys, output_dir=output_dir,
+                                     unzip=False)
+    helper.download_and_extract_file(dataset_key=dataset_id, file_sn=val_label_keys, output_dir=output_dir, unzip=False)
 
     completed: List[str] = []
     if log_file.exists():
@@ -42,7 +42,7 @@ def download(dataset_id: int, output_dir: Path, log_file: Path):
             completed = [line.strip() for line in f.readlines()]
 
     try:
-        for sn in tqdm(val_image_keys, desc="Downloading and processing images"):
+        for sn in tqdm(train_image_keys + val_image_keys, desc="Downloading and processing images"):
             if str(sn) in completed:
                 tqdm.write(f"Skipping already downloaded file_sn={sn}")
                 continue
