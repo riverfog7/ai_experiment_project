@@ -748,3 +748,6 @@ wandb/
 
 datasets/
 .temp/
+train_results/
+models/
+*.tar
