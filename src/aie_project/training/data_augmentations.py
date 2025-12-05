@@ -30,18 +30,26 @@ def get_val_transform(img_size: int = IMG_SIZE):
         transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
     ])
 
-def setup_dataset_transforms(hf_dataset, label2id: dict, img_size=IMG_SIZE) -> DatasetDict:
+def setup_dataset_transforms(hf_dataset, label2id: dict, img_size=IMG_SIZE, include_all_columns: bool = False) -> DatasetDict:
     train_tfm = get_train_transform(img_size)
     val_tfm = get_val_transform(img_size)
 
     def preprocess_train(examples):
         examples["pixel_values"] = [train_tfm(image.convert("RGB")) for image in examples["image"]]
         examples["labels"] = [label2id[c] for c in examples["class_name"]]
+        if not include_all_columns:
+            for key in list(examples.keys()):
+                if key not in ["pixel_values", "labels"]:
+                    del examples[key]
         return examples
 
     def preprocess_val(examples):
         examples["pixel_values"] = [val_tfm(image.convert("RGB")) for image in examples["image"]]
         examples["labels"] = [label2id[c] for c in examples["class_name"]]
+        if not include_all_columns:
+            for key in list(examples.keys()):
+                if key not in ["pixel_values", "labels"]:
+                    del examples[key]
         return examples
 
     if "train" in hf_dataset:

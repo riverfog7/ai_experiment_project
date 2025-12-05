@@ -39,7 +39,7 @@ def get_class_mappings(hf_dataset: DatasetDict) -> Tuple[dict, dict]:
 
     return label2id, id2label
 
-def easy_load(data_path: Path | str, img_size: int = 224, cache_dir: Path | str = "./datasets/cache") -> Tuple[DatasetDict, dict, dict]:
+def easy_load(data_path: Path | str, img_size: int = 224, cache_dir: Path | str = "./datasets/cache", include_all_columns: bool = False) -> Tuple[DatasetDict, dict, dict]:
     data_path = Path(data_path).resolve()
     cache_dir = Path(cache_dir).resolve()
 
@@ -54,7 +54,7 @@ def easy_load(data_path: Path | str, img_size: int = 224, cache_dir: Path | str 
             json.dump(label2id, f)
         with open(cache_dir / "id2label.json", "w") as f:
             json.dump(id2label, f)
-        hf_dataset = setup_dataset_transforms(hf_dataset, label2id, img_size)
+        hf_dataset = setup_dataset_transforms(hf_dataset, label2id, img_size, include_all_columns)
 
     else:
         hf_dataset = DatasetDict.load_from_disk(cache_dir / "easy_load_cache")
@@ -62,6 +62,6 @@ def easy_load(data_path: Path | str, img_size: int = 224, cache_dir: Path | str 
             label2id = json.load(f)
         with open(cache_dir / "id2label.json", "r") as f:
             id2label = json.load(f)
-        hf_dataset = setup_dataset_transforms(hf_dataset, label2id, img_size)
+        hf_dataset = setup_dataset_transforms(hf_dataset, label2id, img_size, include_all_columns)
 
     return hf_dataset, label2id, id2label
