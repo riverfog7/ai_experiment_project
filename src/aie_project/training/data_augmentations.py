@@ -1,13 +1,15 @@
+from typing import Tuple
+
+from datasets import DatasetDict
 from torchvision import transforms
 from transformers import ConvNextImageProcessor
 
-from .configs import EfficientClassificationConfig
-from .constants import IMG_SIZE, IMAGENET_MEAN, IMAGENET_STD
+from .constants import IMAGENET_MEAN, IMAGENET_STD, IMG_SIZE
 
 
-def get_train_transform(config: EfficientClassificationConfig):
+def get_train_transform(img_size: int = IMG_SIZE):
     return transforms.Compose([
-        transforms.Resize((IMG_SIZE, IMG_SIZE)),
+        transforms.Resize((img_size, img_size)),
 
         # Geometric Augmentations
         transforms.RandomHorizontalFlip(p=0.5),
@@ -21,12 +23,34 @@ def get_train_transform(config: EfficientClassificationConfig):
         transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
     ])
 
-def get_val_transform(config: EfficientClassificationConfig):
+def get_val_transform(img_size: int = IMG_SIZE):
     return transforms.Compose([
-        transforms.Resize((IMG_SIZE, IMG_SIZE)),
+        transforms.Resize((img_size, img_size)),
         transforms.ToTensor(),
         transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
     ])
+
+def setup_dataset_transforms(hf_dataset, label2id: dict, img_size=IMG_SIZE) -> DatasetDict:
+    train_tfm = get_train_transform(img_size)
+    val_tfm = get_val_transform(img_size)
+
+    def preprocess_train(examples):
+        examples["pixel_values"] = [train_tfm(image.convert("RGB")) for image in examples["image"]]
+        examples["labels"] = [label2id[c] for c in examples["class_name"]]
+        return examples
+
+    def preprocess_val(examples):
+        examples["pixel_values"] = [val_tfm(image.convert("RGB")) for image in examples["image"]]
+        examples["labels"] = [label2id[c] for c in examples["class_name"]]
+        return examples
+
+    if "train" in hf_dataset:
+        hf_dataset["train"].set_transform(preprocess_train)
+
+    if "validation" in hf_dataset:
+        hf_dataset["validation"].set_transform(preprocess_val)
+
+    return hf_dataset
 
 
 def save_deployment_processor(save_path):

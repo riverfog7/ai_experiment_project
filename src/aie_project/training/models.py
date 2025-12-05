@@ -80,13 +80,14 @@ class EfficientClassificationModel(PreTrainedModel):
             if module.bias is not None:
                 nn.init.constant_(module.bias, 0)
 
-    def forward(self, pixel_values, labels=None):
+    def forward(self, pixel_values, labels=None, **kwargs):
         # Always pool. Will be set to Identity if not needed.
         features = self.pool(self.backbone(pixel_values))
 
         logits = self.classifier(features)
         loss = None
         if labels is not None:
+            # pytorch handles one hot internally
             loss = self.loss_fn(logits, labels)
 
         return ImageClassifierOutput(

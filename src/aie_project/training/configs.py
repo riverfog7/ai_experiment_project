@@ -8,7 +8,7 @@ class EfficientClassificationConfig(PretrainedConfig):
     def __init__(
         self,
         backbone_name: str = "mobilenetv3_large_100",
-        num_classes: int = 203,
+        num_classes: int = 32,
         pretrained: bool = True,
         img_size: int = IMG_SIZE,
         classifier_dropout: float = 0.2,
