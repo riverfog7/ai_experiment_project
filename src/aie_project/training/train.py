@@ -31,6 +31,8 @@ def train(data_loc: Path):
         per_device_train_batch_size=256,
         per_device_eval_batch_size=256,
         num_train_epochs=10,
+        dataloader_num_workers=6,
+        dataloader_prefetch_factor=2,
         weight_decay=0.01,
         push_to_hub=False,
         remove_unused_columns=False,
