@@ -1,4 +1,5 @@
 from transformers import PretrainedConfig
+from .constants import IMG_SIZE
 
 
 class EfficientClassificationConfig(PretrainedConfig):
@@ -9,7 +10,7 @@ class EfficientClassificationConfig(PretrainedConfig):
         backbone_name: str = "mobilenetv3_large_100",
         num_classes: int = 203,
         pretrained: bool = True,
-        img_size: int = 224,
+        img_size: int = IMG_SIZE,
         classifier_dropout: float = 0.2,
         **kwargs,
     ):
