@@ -12,6 +12,8 @@ class EfficientClassificationConfig(PretrainedConfig):
         pretrained: bool = True,
         img_size: int = IMG_SIZE,
         classifier_dropout: float = 0.2,
+        in_features: int = None,
+        has_internal_pooling: bool = None,
         **kwargs,
     ):
         self.backbone_name = backbone_name
@@ -19,4 +21,6 @@ class EfficientClassificationConfig(PretrainedConfig):
         self.pretrained = pretrained
         self.img_size = img_size
         self.classifier_dropout = classifier_dropout
+        self.in_features = in_features
+        self.has_internal_pooling = has_internal_pooling
         super().__init__(**kwargs)
