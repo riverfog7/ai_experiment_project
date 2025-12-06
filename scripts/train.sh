@@ -5,6 +5,7 @@ PROJECT_ROOT=$(cd "$SCRIPT_DIR/.." &>/dev/null && pwd)
 
 cd "${PROJECT_ROOT}"
 export WANDB_PROJECT="ai-study-project"
+export WANDB_WATCH=1
 uv run -m aie_project.training.train \
   --data-path ./datasets/recyclables_image_classification \
   --model-path ./models/trained_model \
