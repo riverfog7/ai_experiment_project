@@ -62,7 +62,7 @@ def train(
         num_train_epochs=10,
         dataloader_num_workers=8,
         dataloader_prefetch_factor=4,
-        dataloader_pin_memory=False, # crashes in validation
+        dataloader_pin_memory=True,
         weight_decay=0.01,
         push_to_hub=False,
         remove_unused_columns=False,
