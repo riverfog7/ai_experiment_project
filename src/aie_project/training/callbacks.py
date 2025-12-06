@@ -3,17 +3,18 @@ from transformers import TrainerCallback
 
 
 class DistributedOptunaCallback(TrainerCallback):
-    def __init__(self, trial: optuna.Trial, metric_name="eval_loss"):
+    def __init__(self, trial: optuna.Trial, objective_metric: str = "eval_combined_f1_macro"):
         self.trial = trial
-        self.metric_name = metric_name
+        self.objective_metric = objective_metric
 
     def on_evaluate(self, args, state, control, metrics=None, **kwargs):
-        current_score = metrics.get(self.metric_name)
-
-        if current_score is None:
+        if metrics is None:
             return
 
-        self.trial.report(current_score, step=state.global_step)
+        for key, value in metrics.items():
+            if isinstance(value, (int, float)):
+                self.trial.set_user_attr(key, value)
 
+        self.trial.report(metrics[self.objective_metric], step=state.global_step)
         if self.trial.should_prune():
             raise optuna.TrialPruned()
