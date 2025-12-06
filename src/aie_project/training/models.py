@@ -1,16 +1,27 @@
+from dataclasses import dataclass
+from typing import Optional
+
 import timm
 import torch
 import torch.nn as nn
 from transformers import PreTrainedModel
+from transformers.file_utils import ModelOutput
 from transformers.modeling_outputs import ImageClassifierOutput
 
-from .configs import EfficientClassificationConfig
+from .configs import EfficientMultiTaskClassificationConfig
 
 
-class EfficientClassificationModel(PreTrainedModel):
-    config_class = EfficientClassificationConfig
+@dataclass
+class MultiTaskOutput(ModelOutput):
+    loss: Optional[torch.FloatTensor] = None
+    logits_1: torch.FloatTensor = None
+    logits_2: torch.FloatTensor = None
 
-    def __init__(self, config: EfficientClassificationConfig):
+
+class EfficientMultiTaskClassificationModel(PreTrainedModel):
+    config_class = EfficientMultiTaskClassificationConfig
+
+    def __init__(self, config: EfficientMultiTaskClassificationConfig):
         super().__init__(config)
 
         # Run a dummy input to check output shape
@@ -80,20 +91,31 @@ class EfficientClassificationModel(PreTrainedModel):
             param.requires_grad = True
 
         # custom classifier head
-        self.classifier = nn.Sequential(
+        # activation is handled in loss function (CrossEntropyLoss)
+        self.classifier_1 = nn.Sequential(
             nn.Flatten(),
             nn.Dropout(config.classifier_dropout),
-            nn.Linear(in_features, config.num_classes)
+            nn.Linear(in_features, config.num_classes_1)
         )
-        self.classifier.train()
+        self.classifier_1.train()
+
+        self.classifier_2 = nn.Sequential(
+            nn.Flatten(),
+            nn.Dropout(config.classifier_dropout),
+            nn.Linear(in_features, config.num_classes_2)
+        )
+        self.classifier_2.train()
 
         # unfreeze classifier parameters explicitly
-        for param in self.classifier.parameters():
+        for param in self.classifier_1.parameters():
+            param.requires_grad = True
+        for param in self.classifier_2.parameters():
             param.requires_grad = True
 
         # use crossentropy loss. Performs better in classification
-        self.loss_fn = nn.CrossEntropyLoss()
-        self._init_weights(self.classifier)
+        self.loss_fn = nn.CrossEntropyLoss() # just use crossentropy for binary classification
+        self._init_weights(self.classifier_1)
+        self._init_weights(self.classifier_2)
 
     def _init_weights(self, module):
         if isinstance(module, nn.Linear):
@@ -101,17 +123,20 @@ class EfficientClassificationModel(PreTrainedModel):
             if module.bias is not None:
                 nn.init.constant_(module.bias, 0)
 
-    def forward(self, pixel_values, labels=None, **kwargs):
-        # Always pool. Will be set to Identity if not needed.
+    def forward(self, pixel_values, labels_1=None, labels_2=None, **kwargs) -> MultiTaskOutput:
         features = self.pool(self.backbone(pixel_values))
 
-        logits = self.classifier(features)
+        logits_1 = self.classifier_1(features)
+        logits_2 = self.classifier_2(features)
         loss = None
-        if labels is not None:
+        if labels_1 is not None and labels_2 is not None:
             # pytorch handles one hot internally
-            loss = self.loss_fn(logits, labels)
+            loss_1 = self.loss_fn(logits_1, labels_1)
+            loss_2 = self.loss_fn(logits_2, labels_2)
+            loss = loss_1 + loss_2
 
-        return ImageClassifierOutput(
+        return MultiTaskOutput(
             loss=loss,
-            logits=logits,
+            logits_1=logits_1,
+            logits_2=logits_2,
         )

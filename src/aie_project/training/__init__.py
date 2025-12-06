@@ -1,2 +1,2 @@
-from .configs import EfficientClassificationConfig
-from .models import EfficientClassificationModel
+from .configs import EfficientMultiTaskClassificationConfig
+from .models import EfficientMultiTaskClassificationModel
