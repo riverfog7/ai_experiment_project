@@ -122,7 +122,8 @@ def load_class_mappings(load_dir: Path | str) -> Tuple[dict, dict, dict, dict]:
 def easy_load(data_path: Path | str,
               img_size: int = 224,
               cache_dir: Path | str = "./datasets/cache",
-              include_all_columns: bool = False
+              include_all_columns: bool = False,
+              keep_in_memory: bool = False,
 ) -> Tuple[DatasetDict, dict, dict, dict, dict]:
     data_path = Path(data_path).resolve()
     cache_dir = Path(cache_dir).resolve()
@@ -133,6 +134,7 @@ def easy_load(data_path: Path | str,
         hf_dataset = DatasetDict.load_from_disk(data_path)
         hf_dataset = prune_and_convert_to_multitask(hf_dataset)
         hf_dataset.save_to_disk(cache_dir / "easy_load_cache")
+        hf_dataset = DatasetDict.load_from_disk(cache_dir / "easy_load_cache", keep_in_memory=keep_in_memory)
         material_label2id, material_id2label, transparency_label2id, transparency_id2label = get_class_mappings(hf_dataset)
         save_class_mappings(
             cache_dir,
@@ -144,7 +146,7 @@ def easy_load(data_path: Path | str,
         hf_dataset = setup_dataset_transforms(hf_dataset, material_label2id, transparency_label2id, img_size, include_all_columns)
 
     else:
-        hf_dataset = DatasetDict.load_from_disk(cache_dir / "easy_load_cache")
+        hf_dataset = DatasetDict.load_from_disk(cache_dir / "easy_load_cache", keep_in_memory=keep_in_memory)
         material_label2id, material_id2label, transparency_label2id, transparency_id2label = load_class_mappings(cache_dir)
         hf_dataset = setup_dataset_transforms(hf_dataset, material_label2id, transparency_label2id, img_size, include_all_columns)
 
