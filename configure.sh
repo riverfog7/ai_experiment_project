@@ -3,6 +3,7 @@
 # script for cloud environment configureation
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 LOCAL_VENV_DIR="$HOME/uv_venv"
+export UV_CACHE_DIR="${HOME}/.uv_cache"
 
 if [ "$(uname)" != "Darwin" ] && [ "$(uname)" != "Linux" ]; then
     echo "Unsupported OS: $(uname). This script supports only Linux and macOS."
