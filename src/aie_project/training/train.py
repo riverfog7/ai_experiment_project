@@ -28,7 +28,7 @@ def train(
     model_path.mkdir(parents=True, exist_ok=True)
 
     dataset, material_label2id, material_id2label, transparency_label2id, transparency_id2label = \
-        easy_load("./datasets/recyclables_image_classification", include_all_columns=False, keep_in_memory=True)
+        easy_load("./datasets/recyclables_image_classification", include_all_columns=False, keep_in_memory=False)
     train_ds = dataset["train"]
     val_ds = dataset["validation"]
 
