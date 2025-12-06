@@ -6,7 +6,7 @@ USE_ARIA2=true
 DATASET_DIR=${1:-"$PROJECT_ROOT/datasets"}
 
 TARBALL_URL="https://riverfog7.com/datasets/recyclables_image_classification_cache.tar"
-TARBALL_MD5=""
+TARBALL_MD5="0ca21017a64cb41926a45552c63140dc"
 
 if ! command -v aria2c &> /dev/null; then
     echo "Error: aria2c is not installed. Falling back to curl".
