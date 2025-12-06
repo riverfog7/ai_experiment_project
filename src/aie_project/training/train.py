@@ -1,22 +1,27 @@
 import argparse
 from pathlib import Path
 
-from transformers import TrainingArguments, Trainer
+import numpy as np
+import torch
+from transformers import TrainingArguments
 
-from .configs import EfficientMultiTaskClassificationConfig
+from .custom_trainer import VisualizationTrainer
 from .dataset_utils import easy_load
 from .metrics import compute_metrics
-from .custom_trainer import VisualizationTrainer
-from .train_utils import model_factory
 from .models import EfficientMultiTaskClassificationModel
+from .train_utils import model_factory
 
 
 def train(
         data_loc: Path,
         train: bool = True,
         model_path: Path | str = "./models/trained_model",
-        output_path: Path | str = "./train_results"
+        output_path: Path | str = "./train_results",
+        random_seed: int = 42,
 ):
+    np.random.seed(random_seed)
+    torch.manual_seed(random_seed)
+
     output_path = Path(output_path)
     model_path = Path(model_path)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -52,12 +57,12 @@ def train(
         lr_scheduler_type="cosine",
         warmup_ratio=0.1,
         load_best_model_at_end=True,
-        per_device_train_batch_size=384,
+        per_device_train_batch_size=512,
         per_device_eval_batch_size=2048,
         num_train_epochs=10,
         dataloader_num_workers=8,
         dataloader_prefetch_factor=4,
-        dataloader_pin_memory=True,
+        dataloader_pin_memory=False, # crashes in validation
         weight_decay=0.01,
         push_to_hub=False,
         remove_unused_columns=False,
@@ -109,10 +114,17 @@ if __name__ == "__main__":
         default=Path("./train_results"),
         help="Path to save evaluation results",
     )
+    parser.add_argument(
+        "--random-seed",
+        type=int,
+        default=42,
+        help="Random seed for reproducibility",
+    )
 
     train(
         data_loc=parser.parse_args().data_path,
         train=not parser.parse_args().eval_only,
         model_path=parser.parse_args().model_path,
         output_path=parser.parse_args().output_path,
+        random_seed=parser.parse_args().random_seed,
     )
