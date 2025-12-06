@@ -45,8 +45,9 @@ def objective(trial: optuna.Trial):
         load_best_model_at_end=True,
         metric_for_best_model=metric,
         greater_is_better=True,
-        # for 24GB vram GPU
-        per_device_train_batch_size=trial.suggest_categorical("per_device_train_batch_size", [64, 128, 256, 384]),
+        # for 48GB vram GPU
+        # 24GB 368 OK -> 48GB 768 OK
+        per_device_train_batch_size=trial.suggest_categorical("per_device_train_batch_size", [64, 128, 256, 384, 512, 768]),
         per_device_eval_batch_size=2048, # fixed because it doesn't affect training
         num_train_epochs=trial.suggest_int("num_train_epochs", 2, 16, step=2),
         dataloader_num_workers=6,
