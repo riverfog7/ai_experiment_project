@@ -1,5 +1,3 @@
-from typing import Tuple
-
 from datasets import DatasetDict
 from torchvision import transforms
 from transformers import ConvNextImageProcessor
@@ -30,25 +28,32 @@ def get_val_transform(img_size: int = IMG_SIZE):
         transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
     ])
 
-def setup_dataset_transforms(hf_dataset, label2id: dict, img_size=IMG_SIZE, include_all_columns: bool = False) -> DatasetDict:
+def setup_dataset_transforms(hf_dataset,
+                             mat_label2id: dict,
+                             trans_label2id: dict,
+                             img_size=IMG_SIZE,
+                             include_all_columns: bool = False
+) -> DatasetDict:
     train_tfm = get_train_transform(img_size)
     val_tfm = get_val_transform(img_size)
 
     def preprocess_train(examples):
         examples["pixel_values"] = [train_tfm(image.convert("RGB")) for image in examples["image"]]
-        examples["labels"] = [label2id[c] for c in examples["class_name"]]
+        examples["labels_1"] = [mat_label2id[c] for c in examples["material_class_name"]]
+        examples["labels_2"] = [trans_label2id[c] for c in examples["transparency_class_name"]]
         if not include_all_columns:
             for key in list(examples.keys()):
-                if key not in ["pixel_values", "labels"]:
+                if key not in ["pixel_values", "labels_1", "labels_2"]:
                     del examples[key]
         return examples
 
     def preprocess_val(examples):
         examples["pixel_values"] = [val_tfm(image.convert("RGB")) for image in examples["image"]]
-        examples["labels"] = [label2id[c] for c in examples["class_name"]]
+        examples["labels_1"] = [mat_label2id[c] for c in examples["material_class_name"]]
+        examples["labels_2"] = [trans_label2id[c] for c in examples["transparency_class_name"]]
         if not include_all_columns:
             for key in list(examples.keys()):
-                if key not in ["pixel_values", "labels"]:
+                if key not in ["pixel_values", "labels_1", "labels_2"]:
                     del examples[key]
         return examples
 
