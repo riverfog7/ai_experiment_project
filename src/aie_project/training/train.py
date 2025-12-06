@@ -62,6 +62,7 @@ def train(
         num_train_epochs=10,
         dataloader_num_workers=8,
         dataloader_prefetch_factor=4,
+        optim="adamw_torch",
         dataloader_pin_memory=True,
         weight_decay=0.01,
         push_to_hub=False,
@@ -76,7 +77,6 @@ def train(
         train_dataset=train_ds,
         eval_dataset=val_ds,
         compute_metrics=compute_metrics,
-        optimizers="adamw_torch",
         tokenizer=None,
     )
 
