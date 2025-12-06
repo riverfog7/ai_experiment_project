@@ -76,6 +76,7 @@ def train(
         train_dataset=train_ds,
         eval_dataset=val_ds,
         compute_metrics=compute_metrics,
+        optimizers="adamw_torch",
         tokenizer=None,
     )
 
