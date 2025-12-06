@@ -36,4 +36,4 @@ def compute_metrics(eval_pred):
 
     mat_results = calculate_single_head(mat_logits, mat_labels, "mat")
     trans_results = calculate_single_head(trans_logits, trans_labels, "trans")
-    return {**mat_results, **trans_results}
+    return {**mat_results, **trans_results, "combined_f1_macro": (mat_results['mat_f1_macro'] + trans_results['trans_f1_macro']) / 2}

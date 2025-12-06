@@ -63,6 +63,8 @@ def train(
         dataloader_num_workers=8,
         dataloader_prefetch_factor=4,
         optim="adamw_torch",
+        metric_for_best_model="eval_combined_f1_macro",
+        greater_is_better=True,
         dataloader_pin_memory=True,
         weight_decay=0.01,
         push_to_hub=False,
@@ -85,8 +87,9 @@ def train(
         trainer.save_model(model_path.absolute().as_posix())
 
     print("Evaluating the model...")
-    outputs = trainer.predict(val_ds)
-    for key, value in outputs.metrics.items():
+    # use evaluate. confusion matrix is handled in custom trainer
+    eval_results = trainer.evaluate()
+    for key, value in eval_results.items():
         print(f"{key}: {value}")
 
 
