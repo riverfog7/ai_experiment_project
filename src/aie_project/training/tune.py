@@ -13,7 +13,7 @@ from transformers import TrainingArguments
 
 from .callbacks import DistributedOptunaCallback
 from .custom_trainer import VisualizationTrainer
-from .dataset_utils import easy_load
+from .dataset_utils import easy_load, prune_smart_fast
 from .metrics import compute_metrics
 from .train_utils import model_factory
 from .tune_utils import get_artifact_store, get_db_conn_str, get_study_name
@@ -28,7 +28,17 @@ def objective(trial: optuna.Trial):
 
     # easy load works with only cached dataset.
     dataset, material_label2id, material_id2label, transparency_label2id, transparency_id2label = \
-        easy_load("./datasets/recyclables_image_classification", include_all_columns=False, keep_in_memory=False)
+        easy_load(
+            "./datasets/recyclables_image_classification",
+            include_all_columns=False,
+            keep_in_memory=False,
+            prune_train_set=True,
+            prune_kwargs={
+                "ratio": 0.1,
+                "threshold": 5000,
+                "seed": RANDOM_SEED,
+            },
+        )
     train_ds = dataset["train"]
     val_ds = dataset["validation"]
     model = model_factory(

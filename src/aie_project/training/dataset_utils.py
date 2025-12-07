@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 from typing import Tuple
 
+import numpy as np
 from datasets import DatasetDict
 
 from .constants import PRUNE_ITEM_COUNT_THRESHOLD
@@ -119,11 +120,36 @@ def load_class_mappings(load_dir: Path | str) -> Tuple[dict, dict, dict, dict]:
 
     return material_label2id, material_id2label, transparency_label2id, transparency_id2label
 
+def prune_smart_fast(dataset, ratio=0.1, threshold=5000, seed=42):
+    """Prune dataset (train set) to preserve all rare classes
+    and randomly sample common classes to achieve target ratio."""
+    df = dataset.select_columns(["material_class_name"]).to_pandas()
+    counts = df["material_class_name"].value_counts()
+
+    is_rare_label = counts < threshold
+    needed_common = (len(dataset) * ratio) - counts[is_rare_label].sum()
+    rate = max(0.0, needed_common / counts[~is_rare_label].sum())
+
+    # vectorized operations for efficiency
+    # is_rare_row is a boolean mask for rows with rare labels
+    is_rare_row = df["material_class_name"].isin(counts[is_rare_label].index)
+    rng = np.random.default_rng(seed)
+
+    # we preserve all rare rows
+    # and sample common rows with probability = rate
+    # numpy will generate an array of random numbers between 0 and 1
+    # for each row, we keep if its random number < rate
+    keep_mask = is_rare_row | (rng.random(len(df)) < rate)
+
+    return dataset.select(df[keep_mask].index).shuffle(seed=seed)
+
 def easy_load(data_path: Path | str,
               img_size: int = 224,
               cache_dir: Path | str = "./datasets/cache",
               include_all_columns: bool = False,
               keep_in_memory: bool = False,
+              prune_train_set: bool = False,
+              prune_kwargs: dict = {},
 ) -> Tuple[DatasetDict, dict, dict, dict, dict]:
     data_path = Path(data_path).resolve()
     cache_dir = Path(cache_dir).resolve()
@@ -143,11 +169,21 @@ def easy_load(data_path: Path | str,
             transparency_label2id,
             transparency_id2label,
         )
+        if prune_train_set:
+            hf_dataset["train"] = prune_smart_fast(
+                hf_dataset["train"],
+                **prune_kwargs,
+            )
         hf_dataset = setup_dataset_transforms(hf_dataset, material_label2id, transparency_label2id, img_size, include_all_columns)
 
     else:
         hf_dataset = DatasetDict.load_from_disk(cache_dir / "easy_load_cache", keep_in_memory=keep_in_memory)
         material_label2id, material_id2label, transparency_label2id, transparency_id2label = load_class_mappings(cache_dir)
+        if prune_train_set:
+            hf_dataset["train"] = prune_smart_fast(
+                hf_dataset["train"],
+                **prune_kwargs,
+            )
         hf_dataset = setup_dataset_transforms(hf_dataset, material_label2id, transparency_label2id, img_size, include_all_columns)
 
     return hf_dataset, material_label2id, material_id2label, transparency_label2id, transparency_id2label
