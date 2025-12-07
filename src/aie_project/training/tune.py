@@ -63,7 +63,7 @@ def objective(trial: optuna.Trial):
         per_device_train_batch_size=trial.suggest_categorical("per_device_train_batch_size", [64, 128, 256, 384]),
         per_device_eval_batch_size=384, # fixed because it doesn't affect training
         num_train_epochs=trial.suggest_int("num_train_epochs", 2, 16, step=2),
-        dataloader_num_workers=4,
+        dataloader_num_workers=8,
         dataloader_prefetch_factor=2,
         optim=optim_type,
         push_to_hub=False,
