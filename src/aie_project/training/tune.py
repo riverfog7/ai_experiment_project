@@ -12,6 +12,7 @@ from .dataset_utils import easy_load
 from .metrics import compute_metrics
 from .train_utils import model_factory
 from .tune_utils import get_artifact_store, get_db_conn_str, get_study_name
+from .utils import find_and_load_dotenv
 
 
 def objective(trial: optuna.Trial):
@@ -87,7 +88,8 @@ def objective(trial: optuna.Trial):
 
     return eval_result[metric]
 
-def run_study():
+def get_study() -> optuna.Study:
+    find_and_load_dotenv()
     storage_url = get_db_conn_str()
     study_name = get_study_name()
 
@@ -102,7 +104,10 @@ def run_study():
             reduction_factor=3
         )
     )
+    return study
 
+def run_study():
+    study = get_study()
     study.optimize(objective, n_trials=None)
 
 if __name__ == "__main__":
