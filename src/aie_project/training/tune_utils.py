@@ -13,9 +13,11 @@ def get_db_conn_str():
     if not all([postgres_user, postgres_password, postgres_host, postgres_port, postgres_db]):
         raise ValueError("One or more PostgreSQL environment variables are not set.")
 
-    conn_str = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_db}"
-    # URL encode special characters (Passwords may contain special characters)
-    return urllib.parse.quote(conn_str, safe=":/@")
+    safe_user = urllib.parse.quote_plus(postgres_user)
+    safe_password = urllib.parse.quote_plus(postgres_password)
+    safe_db = urllib.parse.quote_plus(postgres_db)
+
+    return f"postgresql://{safe_user}:{safe_password}@{postgres_host}:{postgres_port}/{safe_db}"
 
 def get_study_name():
     study_name = os.getenv("OPTUNA_STUDY_NAME")
