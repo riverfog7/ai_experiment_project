@@ -85,6 +85,7 @@ def objective(trial: optuna.Trial):
         dataloader_num_workers=8,
         dataloader_prefetch_factor=2,
         optim=optim_type,
+        bf16=torch.cuda.is_bf16_supported(), # AMP with bf16 if supported
         push_to_hub=False,
         remove_unused_columns=False,
         report_to=["wandb"], # will report to optuna in a custom callback
