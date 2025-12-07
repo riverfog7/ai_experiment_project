@@ -13,7 +13,7 @@ uv tool run --with hf_transfer hf download \
   riverfog7/ai-experiment-project \
   --repo-type dataset \
   --local-dir "$DATASET_DIR/cache/easy_load_cache" \
-  --max-workers 16
+  --max-workers 8
 
 cd "$DATASET_DIR/datasets/cache" || exit 1
 echo "Downloading labels using curl..."
