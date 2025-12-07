@@ -31,7 +31,14 @@ def objective(trial: optuna.Trial):
         easy_load("./datasets/recyclables_image_classification", include_all_columns=False, keep_in_memory=False)
     train_ds = dataset["train"]
     val_ds = dataset["validation"]
-    model = model_factory(num_classes_1=len(material_label2id), num_classes_2=len(transparency_label2id))
+    model = model_factory(
+        num_classes_1=len(material_label2id),
+        num_classes_2=len(transparency_label2id),
+        label2id_1=material_label2id,
+        id2label_1=material_id2label,
+        label2id_2=transparency_label2id,
+        id2label_2=transparency_id2label,
+    )
     metric = "eval_combined_f1_macro"
     optuna_callback = DistributedOptunaCallback(trial, objective_metric=metric)
 
