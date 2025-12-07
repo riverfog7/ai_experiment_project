@@ -20,6 +20,7 @@ dependencies = [
     "evaluate>=0.4.6",
     "matplotlib>=3.10.7",
     "optuna>=4.6.0",
+    "psycopg2-binary>=2.9.11",
     "pydantic>=2.12.5",
     "scikit-learn>=1.7.2",
     "seaborn>=0.13.2",
