@@ -116,6 +116,8 @@ def objective(trial: optuna.Trial):
         file_path=tarball_path.absolute().as_posix(),
         study_or_trial=trial,
     )
+    if os.path.exists(tarball_path.absolute().as_posix()):
+        os.remove(tarball_path.absolute().as_posix())
     wandb.finish()
 
     return eval_result[metric]
