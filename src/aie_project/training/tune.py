@@ -107,8 +107,8 @@ def objective(trial: optuna.Trial):
 
     trainer.save_model(save_dir.absolute().as_posix())
 
-    tarball_path = Path("models") / f"{trial.study.study_name}_{trial.number}.tar.gz"
-    with tarfile.open(tarball_path, "w:gz") as tar:
+    tarball_path = Path("models") / f"{trial.study.study_name}_{trial.number}.tar"
+    with tarfile.open(tarball_path.absolute().as_posix(), "w") as tar:
         tar.add(save_dir, arcname=save_dir.name)
 
     upload_artifact(
