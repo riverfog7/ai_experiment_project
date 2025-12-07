@@ -1,3 +1,6 @@
+import torch
+import numpy as np
+import os
 import tarfile
 from pathlib import Path
 
@@ -16,6 +19,11 @@ from .utils import find_and_load_dotenv
 
 
 def objective(trial: optuna.Trial):
+    # set seed for reproducibility
+    RANDOM_SEED = 42
+    torch.manual_seed(RANDOM_SEED)
+    np.random.seed(RANDOM_SEED)
+
     # easy load works with only cached dataset.
     dataset, material_label2id, material_id2label, transparency_label2id, transparency_id2label = \
         easy_load("./datasets/recyclables_image_classification", include_all_columns=False, keep_in_memory=False)
@@ -29,12 +37,14 @@ def objective(trial: optuna.Trial):
     train_dir.mkdir(parents=True, exist_ok=True)
     save_dir = Path("models") / f"{trial.study.study_name}_{trial.number}"
     save_dir.mkdir(parents=True, exist_ok=True)
+    os.environ["WANDB_NAME"] = f"{trial.study.study_name}_{trial.number}"
 
     optim_type = trial.suggest_categorical("optim", ["adamw_torch", "sgd", "adagrad"])
 
     # dataset is shuffled by default (Not IterableDataset)
     # see https://discuss.huggingface.co/t/does-masked-language-model-training-script-does-random-shuffle-on-the-dataset/11197/3
     args = TrainingArguments(
+        seed=RANDOM_SEED,
         output_dir=train_dir.absolute().as_posix(),
         eval_strategy="epoch",
         save_strategy="epoch",
