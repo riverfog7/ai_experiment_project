@@ -58,7 +58,7 @@ def objective(trial: optuna.Trial):
     save_dir = Path("models") / f"{trial.study.study_name}_{trial.number}"
     save_dir.mkdir(parents=True, exist_ok=True)
 
-    optim_type = trial.suggest_categorical("optim", ["adamw_torch", "sgd", "adagrad"])
+    optim_type = trial.suggest_categorical("optim", ["adamw_torch", "sgd", "rmsprop"])
 
     # dataset is shuffled by default (Not IterableDataset)
     # see https://discuss.huggingface.co/t/does-masked-language-model-training-script-does-random-shuffle-on-the-dataset/11197/3
@@ -70,9 +70,10 @@ def objective(trial: optuna.Trial):
         save_strategy="epoch",
         logging_strategy="steps",
         logging_steps=50,
-        learning_rate=trial.suggest_float("learning_rate", 1e-5, 1e-3, log=True),
+        learning_rate=trial.suggest_float("learning_rate", 1e-5, 2e-3, log=True),
         lr_scheduler_type="cosine",
-        warmup_ratio=0.2, # fixed to conserve compute
+        warmup_ratio=0.08, # fixed to conserve compute
+        weight_decay=trial.suggest_float("weight_decay", 1e-4, 1e-1, log=True),
         load_best_model_at_end=True,
         metric_for_best_model=metric,
         greater_is_better=True,
