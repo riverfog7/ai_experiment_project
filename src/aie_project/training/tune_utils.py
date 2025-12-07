@@ -1,6 +1,7 @@
 import os
 from optuna.artifacts import Boto3ArtifactStore
 import boto3
+import urllib.parse
 
 
 def get_db_conn_str():
@@ -12,7 +13,9 @@ def get_db_conn_str():
     if not all([postgres_user, postgres_password, postgres_host, postgres_port, postgres_db]):
         raise ValueError("One or more PostgreSQL environment variables are not set.")
 
-    return f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_db}"
+    conn_str = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_db}"
+    # URL encode special characters (Passwords may contain special characters)
+    return urllib.parse.quote(conn_str, safe=":/@")
 
 def get_study_name():
     study_name = os.getenv("OPTUNA_STUDY_NAME")
