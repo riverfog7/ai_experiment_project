@@ -1,7 +1,8 @@
 import os
-from optuna.artifacts import Boto3ArtifactStore
-import boto3
 import urllib.parse
+
+import boto3
+from optuna.artifacts import Boto3ArtifactStore
 
 
 def get_db_conn_str():
