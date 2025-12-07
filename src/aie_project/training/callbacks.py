@@ -1,4 +1,5 @@
 import optuna
+import wandb
 from transformers import TrainerCallback
 
 
@@ -17,4 +18,7 @@ class DistributedOptunaCallback(TrainerCallback):
 
         self.trial.report(metrics[self.objective_metric], step=state.global_step)
         if self.trial.should_prune():
+            if args.local_rank in [-1, 0]:
+                wandb.log({"trial_pruned": True})
+                wandb.finish()
             raise optuna.TrialPruned()
