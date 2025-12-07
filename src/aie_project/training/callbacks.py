@@ -16,7 +16,7 @@ class DistributedOptunaCallback(TrainerCallback):
             if isinstance(value, (int, float)):
                 self.trial.set_user_attr(key, value)
 
-        self.trial.report(metrics[self.objective_metric], step=state.global_step)
+        self.trial.report(metrics[self.objective_metric], step=int(state.epoch))
         if self.trial.should_prune():
             if args.local_rank in [-1, 0]:
                 wandb.log({"trial_pruned": True})
