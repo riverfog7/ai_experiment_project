@@ -92,5 +92,6 @@ explicit = true
 dev = [
     "ipywidgets>=8.1.8",
     "notebook>=7.5.0",
+    "optuna-dashboard>=0.20.0",
 ]
 
