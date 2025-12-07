@@ -1,12 +1,13 @@
-import torch
-import numpy as np
 import os
 import tarfile
 from pathlib import Path
 
+import numpy as np
 import optuna
+import torch
 from optuna.artifacts import upload_artifact
 from optuna.pruners import HyperbandPruner
+from optuna.storages import RDBStorage, RetryFailedTrialCallback
 from transformers import TrainingArguments
 
 from .callbacks import DistributedOptunaCallback
@@ -100,12 +101,19 @@ def objective(trial: optuna.Trial):
 
 def get_study() -> optuna.Study:
     find_and_load_dotenv()
-    storage_url = get_db_conn_str()
+
+    retry_cb = RetryFailedTrialCallback(max_retry=3)
+    storage = RDBStorage(
+        url=get_db_conn_str(),
+        heartbeat_interval=60,
+        grace_period=120,
+        failed_trial_callback=retry_cb,
+    )
     study_name = get_study_name()
 
     study = optuna.create_study(
         study_name=study_name,
-        storage=storage_url,
+        storage=storage,
         load_if_exists=True,
         direction="maximize",
         pruner=HyperbandPruner(
