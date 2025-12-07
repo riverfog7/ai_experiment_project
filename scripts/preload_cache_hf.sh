@@ -15,6 +15,6 @@ uv tool run --with hf_transfer hf download \
   --local-dir "$DATASET_DIR/cache/easy_load_cache" \
   --max-workers 8
 
-cd "$DATASET_DIR/datasets/cache" || exit 1
+cd "$DATASET_DIR/cache" || exit 1
 echo "Downloading labels using curl..."
 curl -L "$LABELS_URL" | tar -xzf -
