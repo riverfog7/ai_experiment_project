@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 import optuna
 import torch
+import wandb
 from optuna.artifacts import upload_artifact
 from optuna.pruners import HyperbandPruner
 from optuna.storages import RDBStorage, RetryFailedTrialCallback
@@ -96,6 +97,7 @@ def objective(trial: optuna.Trial):
         file_path=tarball_path.absolute().as_posix(),
         study_or_trial=trial,
     )
+    wandb.finish()
 
     return eval_result[metric]
 
