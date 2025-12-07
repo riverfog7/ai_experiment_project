@@ -8,12 +8,13 @@ import torch
 import wandb
 from optuna.artifacts import upload_artifact
 from optuna.pruners import HyperbandPruner
+from optuna.samplers import TPESampler
 from optuna.storages import RDBStorage, RetryFailedTrialCallback
 from transformers import TrainingArguments
 
 from .callbacks import DistributedOptunaCallback
 from .custom_trainer import VisualizationTrainer
-from .dataset_utils import easy_load, prune_smart_fast
+from .dataset_utils import easy_load
 from .metrics import compute_metrics
 from .train_utils import model_factory
 from .tune_utils import get_artifact_store, get_db_conn_str, get_study_name
@@ -135,6 +136,10 @@ def get_study() -> optuna.Study:
         storage=storage,
         load_if_exists=True,
         direction="maximize",
+        sampler=TPESampler(
+            multivariate=True,
+            constant_liar=True  # distributed efficiency
+        ),
         pruner=HyperbandPruner(
             min_resource=1,
             max_resource=16,
