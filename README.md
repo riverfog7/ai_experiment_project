@@ -55,7 +55,12 @@ easy_load(
 
 8. Or download the preprocessed and cached dataset
 ```bash
-./scripts/preload_cache_hf.sh
+./scripts/preload_cache.sh
+```
+
+9. Optionally log in to wandb for logging
+```bash
+uv tool run wandb login
 ```
 
 #### Hyperparameter Optimization
