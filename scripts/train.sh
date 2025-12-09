@@ -8,5 +8,5 @@ export WANDB_PROJECT="ai-study-project"
 export WANDB_WATCH=1
 uv run -m aie_project.training.train \
   --data-path ./datasets/recyclables_image_classification \
-  --model-path ./models/trained_model \
-  --output-path ./train_results
+  --model-path ./models/final_model \
+  --output-path ./final_results

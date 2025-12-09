@@ -3,7 +3,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from transformers import TrainingArguments
+from transformers import TrainingArguments, EarlyStoppingCallback
 
 from .custom_trainer import VisualizationTrainer
 from .dataset_utils import easy_load
@@ -28,7 +28,12 @@ def train(
     model_path.mkdir(parents=True, exist_ok=True)
 
     dataset, material_label2id, material_id2label, transparency_label2id, transparency_id2label = \
-        easy_load("./datasets/recyclables_image_classification", include_all_columns=False, keep_in_memory=False)
+        easy_load(
+            data_loc.absolute().as_posix(),
+            include_all_columns=False,
+            keep_in_memory=False,
+            prune_train_set=False,
+        )
     train_ds = dataset["train"]
     val_ds = dataset["validation"]
 
@@ -47,26 +52,36 @@ def train(
             low_cpu_mem_usage=False,
         )
 
+    metric = "eval_combined_f1_macro"
+    batch_size = 128
+    # assume GPU count is 1 here
+    epoch_steps = len(train_ds) // batch_size
+    eval_steps = epoch_steps // 4  # evaluate 4 times per epoch
     args = TrainingArguments(
+        run_name=f"ai-experiment-project-final",
+        seed=random_seed,
         output_dir=output_path.absolute().as_posix(),
-        eval_strategy="epoch",
-        save_strategy="epoch",
+        eval_strategy="steps",
+        eval_steps=eval_steps,
+        save_strategy="steps",
+        save_steps=eval_steps,
         logging_strategy="steps",
         logging_steps=50,
-        learning_rate=2e-4,
+        learning_rate=0.000766037529647225,
         lr_scheduler_type="cosine",
-        warmup_ratio=0.1,
+        warmup_ratio=0.08,  # fixed to conserve compute
+        weight_decay=0.07326981828565753,
         load_best_model_at_end=True,
-        per_device_train_batch_size=512,
-        per_device_eval_batch_size=2048,
+        metric_for_best_model=metric,
+        greater_is_better=True,
+        label_smoothing_factor=0.1,
+        per_device_train_batch_size=batch_size,
+        per_device_eval_batch_size=384,  # fixed because it doesn't affect training
         num_train_epochs=10,
         dataloader_num_workers=8,
-        dataloader_prefetch_factor=4,
+        dataloader_prefetch_factor=2,
         optim="adamw_torch",
-        metric_for_best_model="eval_combined_f1_macro",
-        greater_is_better=True,
-        dataloader_pin_memory=True,
-        weight_decay=0.01,
+        bf16=torch.cuda.is_bf16_supported(),  # AMP with bf16 if supported
         push_to_hub=False,
         remove_unused_columns=False,
         report_to=["wandb"],
@@ -80,6 +95,8 @@ def train(
         eval_dataset=val_ds,
         compute_metrics=compute_metrics,
         tokenizer=None,
+        # stop with patience of 1 epoch (4 eval per epoch)
+        callbacks=[EarlyStoppingCallback(early_stopping_patience=4)],
     )
 
     if train:
