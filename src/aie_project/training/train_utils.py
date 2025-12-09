@@ -13,6 +13,7 @@ def model_factory(backbone_arch: str = "mobilenetv3_large_100",
                   label2id_2: dict = None,
                   id2label_2: dict = None,
                   classifier_dropout: float = 0.2) -> EfficientMultiTaskClassificationModel:
+    # utility function to construct model with given parameters
     config = EfficientMultiTaskClassificationConfig(
         backbone_name=backbone_arch,
         pretrained=pretrained,

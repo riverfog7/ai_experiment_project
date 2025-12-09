@@ -6,6 +6,7 @@ from .constants import IMAGENET_MEAN, IMAGENET_STD, IMG_SIZE
 
 
 def get_train_transform(img_size: int = IMG_SIZE):
+    # data augmentation for training set
     return transforms.Compose([
         transforms.Resize((img_size, img_size)),
 
@@ -22,6 +23,8 @@ def get_train_transform(img_size: int = IMG_SIZE):
     ])
 
 def get_val_transform(img_size: int = IMG_SIZE):
+    # data augmentation for validation/test set
+    # we don't apply augmentations that change image content here
     return transforms.Compose([
         transforms.Resize((img_size, img_size)),
         transforms.ToTensor(),
@@ -34,6 +37,7 @@ def setup_dataset_transforms(hf_dataset,
                              img_size=IMG_SIZE,
                              include_all_columns: bool = False
 ) -> DatasetDict:
+    # function to set up dataset transforms applied on-the-fly during training/validation
     train_tfm = get_train_transform(img_size)
     val_tfm = get_val_transform(img_size)
 

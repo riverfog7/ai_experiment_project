@@ -6,13 +6,13 @@ import torch
 import torch.nn as nn
 from transformers import PreTrainedModel
 from transformers.file_utils import ModelOutput
-from transformers.modeling_outputs import ImageClassifierOutput
 
 from .configs import EfficientMultiTaskClassificationConfig
 
 
 @dataclass
 class MultiTaskOutput(ModelOutput):
+    # custom model output dataclass (unconventional classification architecture)
     loss: Optional[torch.FloatTensor] = None
     logits_1: torch.FloatTensor = None
     logits_2: torch.FloatTensor = None
@@ -90,7 +90,7 @@ class EfficientMultiTaskClassificationModel(PreTrainedModel):
         for param in self.backbone.parameters():
             param.requires_grad = True
 
-        # custom classifier head
+        # custom classifier head (two head exists because of two classification tasks)
         # activation is handled in loss function (CrossEntropyLoss)
         self.classifier_1 = nn.Sequential(
             nn.Flatten(),
@@ -135,6 +135,7 @@ class EfficientMultiTaskClassificationModel(PreTrainedModel):
             loss_2 = self.loss_fn(logits_2, labels_2)
             loss = loss_1 + loss_2
 
+        # return custom output dataclass
         return MultiTaskOutput(
             loss=loss,
             logits_1=logits_1,

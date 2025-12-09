@@ -1,10 +1,7 @@
 import evaluate
-import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
-from sklearn.metrics import confusion_matrix
 
-
+# preload metrics
 metric_acc = evaluate.load("accuracy")
 metric_precision = evaluate.load("precision")
 metric_recall = evaluate.load("recall")

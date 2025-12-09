@@ -5,6 +5,7 @@ from transformers import TrainerCallback
 
 class DistributedOptunaCallback(TrainerCallback):
     def __init__(self, trial: optuna.Trial, objective_metric: str = "eval_combined_f1_macro"):
+        # callback for optuna hyperparameter logging and pruning in distributed hyperparameter search
         self.trial = trial
         self.objective_metric = objective_metric
 
@@ -16,9 +17,12 @@ class DistributedOptunaCallback(TrainerCallback):
             if isinstance(value, (int, float)):
                 self.trial.set_user_attr(key, value)
 
+        # report metric to optuna and prune if needed
         self.trial.report(metrics[self.objective_metric], step=int(state.epoch))
         if self.trial.should_prune():
             if args.local_rank in [-1, 0]:
+                # only log from main process
+                # finish wandb run manually to avoid multiple runs logged as one
                 wandb.log({"trial_pruned": True})
                 wandb.finish()
             raise optuna.TrialPruned()

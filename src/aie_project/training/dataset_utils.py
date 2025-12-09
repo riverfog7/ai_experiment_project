@@ -10,6 +10,8 @@ from .data_augmentations import setup_dataset_transforms
 
 
 def convert_multitask(class_names: list) -> dict:
+    # helper function to convert single class_name to multitask labels
+    # drop the last "shape" part of the class_name
     material_labels = ["_".join(name.split("_")[0:2]) for name in class_names]
     transparency_labels = [name.split("_")[2] for name in class_names]
 
@@ -19,6 +21,8 @@ def convert_multitask(class_names: list) -> dict:
     }
 
 def prune_and_convert_to_multitask(hf_dataset: DatasetDict) -> DatasetDict:
+    # helper function to remove classes that exist only on one split or have low item count
+
     # batched processing with one column for computation speedup
     hf_dataset = hf_dataset.map(convert_multitask, batched=True, batch_size=32768, input_columns=["class_name"])
 
@@ -65,6 +69,7 @@ def prune_and_convert_to_multitask(hf_dataset: DatasetDict) -> DatasetDict:
     return hf_dataset
 
 def get_class_mappings(hf_dataset: DatasetDict) -> Tuple[dict, dict, dict, dict]:
+    # helper function to get label2id, id2label for each classification task
     train_materials = set(hf_dataset["train"].unique("material_class_name"))
     val_materials = set(hf_dataset["validation"].unique("material_class_name"))
     assert train_materials == val_materials, "Train and Validation sets must have the same materials."
@@ -151,10 +156,14 @@ def easy_load(data_path: Path | str,
               prune_train_set: bool = False,
               prune_kwargs: dict = {},
 ) -> Tuple[DatasetDict, dict, dict, dict, dict]:
+    # helper function to preprocess dataset and load it
+    # utilizes disk caching for faster subsequent loads
     data_path = Path(data_path).resolve()
     cache_dir = Path(cache_dir).resolve()
 
     id2label = {}
+    # if cache exists, load from cache
+    # else, process and save to cache
     if not cache_dir.exists():
         cache_dir.mkdir(parents=True, exist_ok=True)
         hf_dataset = DatasetDict.load_from_disk(data_path)
