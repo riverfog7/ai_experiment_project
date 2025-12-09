@@ -80,7 +80,8 @@ def train(
         dataloader_num_workers=16,
         dataloader_prefetch_factor=2,
         optim="adamw_torch",
-        bf16=torch.cuda.is_bf16_supported(),  # AMP with bf16 if supported
+        bf16=False, # Full precision for main training
+        fp16=False,
         push_to_hub=False,
         remove_unused_columns=False,
         report_to=["wandb"],
@@ -95,7 +96,7 @@ def train(
         compute_metrics=compute_metrics,
         tokenizer=None,
         # stop with patience of 1 epoch (4 eval per epoch)
-        callbacks=[EarlyStoppingCallback(early_stopping_patience=16)],
+        callbacks=[EarlyStoppingCallback(early_stopping_patience=32)],
     )
 
     if train:
