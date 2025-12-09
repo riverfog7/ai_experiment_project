@@ -67,7 +67,7 @@ def train(
         save_steps=eval_steps,
         logging_strategy="steps",
         logging_steps=50,
-        learning_rate=0.000766037529647225,
+        learning_rate=0.000766037529647225 / 3,
         lr_scheduler_type="cosine",
         warmup_ratio=0.08,  # fixed to conserve compute
         weight_decay=0.07326981828565753,
