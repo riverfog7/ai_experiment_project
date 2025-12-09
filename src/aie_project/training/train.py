@@ -79,6 +79,8 @@ def train(
         num_train_epochs=16,
         dataloader_num_workers=16,
         dataloader_prefetch_factor=2,
+        label_smoothing_factor=0.1,
+        max_grad_norm=0.5, # stabilize training
         optim="adamw_torch",
         bf16=False, # Full precision for main training
         fp16=False,
