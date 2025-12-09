@@ -6,10 +6,12 @@ from pydantic import BaseModel
 
 
 class ImageClassificationData(BaseModel):
+    # schema for a single image classification data point
     image_path: Optional[Path]
     class_name: str
 
     def to_hf_dict(self) -> dict:
+        # helper function to convert to a huggingface dataset
         if self.image_path is None:
             raise ValueError("image_path is not set. Please set it before calling to_hf_dict().")
         return {
@@ -18,7 +20,8 @@ class ImageClassificationData(BaseModel):
         }
 
 
+# Pass feature types to Dataset
 HF_FEATURES = Features({
-    "image": Image(),
+    "image": Image(),   # This makes huggingface treat this field as a binary image data
     "class_name": Value("string"),
 })

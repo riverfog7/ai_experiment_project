@@ -13,6 +13,7 @@ def convert_to_image_classification(
         size_threshold: Tuple[int, int] = (50, 50),
         pad: int = 5,
 ) -> Generator[ImageClassificationData, None, None]:
+    # generator that converts original data format to image classification format
     cache_dir = Path(cache_dir)
     cache_dir.mkdir(parents=True, exist_ok=True)
 
@@ -34,6 +35,7 @@ def convert_to_object_detection(
         image_descriptions: List[ImageDescription],
         size_threshold: Tuple[int, int] = (50/768, 50/768),
 ) -> Generator[ObjectDetectionData, None, None]:
+    # generator that converts original data format to object detection format
     for img_desc in image_descriptions:
         if img_desc.image_path is None:
             continue

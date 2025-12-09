@@ -37,6 +37,8 @@ class AnnotationEntry(BaseModel):
     shape_type: Literal["BOX", "POLYGON"] = Field(..., alias="SHAPE_TYPE")
     points: List[List[float]] = Field(..., alias="POINTS", min_length=1)
 
+    # Robust validation for points field.
+    # made to filter outliers like polygons having only two points.
     @field_validator('points')
     @classmethod
     def check_inner_list_length(cls, v: List[List[float]]) -> List[List[float]]:

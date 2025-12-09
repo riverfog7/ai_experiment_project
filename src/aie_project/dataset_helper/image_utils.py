@@ -17,6 +17,8 @@ class BatchCropper:
                  num_workers: int = None,
                  size_threshold=(50,50),
                  pad: int = 5):
+        # multithreaded image cropper
+        # uses as many workers as CPU cores by default
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.num_workers = num_workers if num_workers is not None else os.cpu_count()

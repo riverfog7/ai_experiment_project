@@ -15,15 +15,19 @@ from .utils import CachedImageFinder
 
 
 def data_generator(data_subset_path: Path) -> Generator[ImageDescription, None, None]:
+    # generator that loads images from a data subset path (train / validation directory)
     # Load data from JSON files
     data_subset_path = Path(data_subset_path)
     if not data_subset_path.exists():
         raise FileNotFoundError(f"Data subset path not found: {data_subset_path}")
 
+    # cached file lookup ; configure extension to save memory
     finder = CachedImageFinder(data_subset_path, ext=".jpg")
 
     for json_file in data_subset_path.rglob("**/*.json"):
         try:
+            # validate schema
+            # this will filter invalid files like 1 points in polygon, etc.
             desc = ImageDescription.model_validate_json(json_file.read_text())
             img_path = finder.find(desc.image_info.file_name)
             if img_path:
@@ -32,6 +36,7 @@ def data_generator(data_subset_path: Path) -> Generator[ImageDescription, None, 
             else:
                 warnings.warn(f"Image file not found for {desc.image_info.file_name} referenced in {json_file}")
         except ValidationError as ve:
+            # Do not terminate on validation error, just warn and continue
             warnings.warn(f"Validation error for file {json_file}: {ve}")
 
     del finder
@@ -58,6 +63,7 @@ def hf_data_generator(
         # convert functions use multiprocessing internally
         # which will load all into memory anyway
         img_descs = list(data_generator(data_subset_path))
+        # convert to appropriate format using generators
         if convert_to == "object_detection":
             for od_data in convert_to_object_detection(img_descs):
                 yield od_data.to_hf_dict()
@@ -76,6 +82,7 @@ def subset_to_hf_dataset(
         cache_dir: Path | str = "./.temp",
         convert_to: Optional[Literal["object_detection", "image_classification"]] = "image_classification",
 ) -> Dataset:
+    # Utility function to convert a data subset (train/validation) to a Hugging Face Dataset
     # Load all data and convert to Hugging Face format
     cache_dir = Path(cache_dir)
     if not cache_dir.exists():
@@ -109,6 +116,7 @@ def to_hf_dataset(
         cache_dir: Path | str = "./.temp",
         convert_to: Optional[Literal["object_detection", "image_classification"]] = "image_classification",
 ):
+    # utility function that searches train, validation subsets dynamically and converts them to HF DatasetDict
     data_root = Path(data_root)
     if not data_root.exists():
         raise FileNotFoundError(f"Data root path not found: {data_root}")
@@ -135,6 +143,7 @@ def to_hf_dataset(
         convert_to=convert_to,
     )
 
+    # merge to DatasetDict for easy use
     return DatasetDict({
         "train": train_dataset,
         "validation": val_dataset,

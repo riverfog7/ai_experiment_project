@@ -26,6 +26,9 @@ def get_class_name(annotation: AnnotationEntry) -> str:
 
 class CachedImageFinder:
     def __init__(self, base_path: Path, ext: str = None):
+        # fast path lookup for millions of image files
+        # Caches the entire file structure in memory for fast lookup
+        # and check filesystem only if not found in cache
         self.base_path = base_path
         self.ext = ext
         self.cache = self._build_cache()
