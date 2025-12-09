@@ -74,11 +74,10 @@ def train(
         load_best_model_at_end=True,
         metric_for_best_model=metric,
         greater_is_better=True,
-        label_smoothing_factor=0.1,
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=384,  # fixed because it doesn't affect training
-        num_train_epochs=10,
-        dataloader_num_workers=8,
+        num_train_epochs=16,
+        dataloader_num_workers=16,
         dataloader_prefetch_factor=2,
         optim="adamw_torch",
         bf16=torch.cuda.is_bf16_supported(),  # AMP with bf16 if supported
