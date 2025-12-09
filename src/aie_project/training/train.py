@@ -95,7 +95,7 @@ def train(
         compute_metrics=compute_metrics,
         tokenizer=None,
         # stop with patience of 1 epoch (4 eval per epoch)
-        callbacks=[EarlyStoppingCallback(early_stopping_patience=4)],
+        callbacks=[EarlyStoppingCallback(early_stopping_patience=16)],
     )
 
     if train:
