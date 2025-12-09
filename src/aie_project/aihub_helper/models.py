@@ -16,6 +16,7 @@ class AIHubFolder(BaseModel):
     children: List[Union["AIHubFolder", "AIHubFile"]] = Field(default_factory=list)
 
 
+    # method overrides for easier access
     def __len__(self) -> int:
         return len(self.children)
 

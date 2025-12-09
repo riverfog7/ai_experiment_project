@@ -31,6 +31,7 @@ class AIHubHelper:
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_background_workers)
 
     def get_api_key(self) -> str:
+        # exists because api key is a SecretStr
         return self.api_key.get_secret_value()
 
     def get_auth_header(self) -> dict:
@@ -48,20 +49,23 @@ class AIHubHelper:
             else:
                 raise ValueError(f"Wrong status code received from AIHub API: {response.status_code}")
 
+        # parse with helper function. API response is not JSON formatted
         return parse_aihub_tree(response.text)
 
     def download_file(
             self,
             dataset_key: Union[str, int],
             file_sn: Union[str, int, List[Union[str, int]]] = "all",
-            output_file: Path = Path("./download.tar"),
+            output_file: Path = Path("./download.tar"), # API always responds with a tar file
             is_package: bool = False,
     ) -> Path:
         base_url = "https://api.aihub.or.kr/down/pckage/0.6" if is_package else "https://api.aihub.or.kr/down/0.6"
         url = f"{base_url}/{dataset_key}.do"
         if isinstance(file_sn, list):
+            # API expects comma seperated list of file serial numbers
             file_sn = ",".join(map(str, file_sn))
 
+        # Credential needed with access to the specific dataset.
         headers = self.get_auth_header()
         params = {"fileSn": str(file_sn)}
 
@@ -70,6 +74,7 @@ class AIHubHelper:
 
         tqdm.write(f"Downloading file_sn={file_sn}...")
 
+        # Do not use multi threaded downloads. One connection is able to saturate bandwidth.
         with requests.get(url, headers=headers, params=params, stream=True) as response:
             response.raise_for_status()
             total_size = int(response.headers.get('content-length', 0))
@@ -88,8 +93,10 @@ class AIHubHelper:
             tar_path: Path,
             output_dir: Path,
             unzip: bool,
+            # whether to create a directory with the zipfile name when unzipping
             create_zipfile_directory: bool,
-            transform: Optional[Callable[[List[Path]], None]]
+            # user defined transform logic that gets a list of extracted file paths
+            transform: Optional[Callable[[List[Path]], None]],
     ):
         try:
             # This function merges extracts the tarball and merges .part* files.
@@ -172,4 +179,5 @@ class AIHubHelper:
         return output_dir
 
     def shutdown(self):
+        # wait until all background tasks are complete
         self._executor.shutdown(wait=True)

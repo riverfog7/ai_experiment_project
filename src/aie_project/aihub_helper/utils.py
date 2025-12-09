@@ -85,12 +85,13 @@ def extract_and_merge(tar_path: Union[str, Path], dest_dir: Union[str, Path]) ->
     merge_tasks = defaultdict(list)
     part_pattern = re.compile(r'(.+)\.part(\d+)$')
 
+    # search filetree for .part* files
     for file_path in dest_dir.rglob("*"):
         if file_path.is_file():
             match = part_pattern.match(file_path.name)
             if match:
                 base_name = match.group(1)
-                offset = int(match.group(2))
+                offset = int(match.group(2))    # "part" has offset bytes appended to it
                 target_file = file_path.parent / base_name
                 merge_tasks[target_file].append((offset, file_path))
 
@@ -102,6 +103,7 @@ def extract_and_merge(tar_path: Union[str, Path], dest_dir: Union[str, Path]) ->
 
         with open(target_file, 'wb') as outfile:
             for _, part_path in parts:
+                # merge all parts into target file and delete part file
                 with open(part_path, 'rb') as infile:
                     shutil.copyfileobj(infile, outfile)
                 part_path.unlink()
@@ -114,6 +116,8 @@ def extract_and_merge(tar_path: Union[str, Path], dest_dir: Union[str, Path]) ->
 def unzip_file(zip_path: Union[str, Path], dest_dir: Union[str, Path] = None, delete_zip: bool = True, create_directory: bool = True) -> List[Path]:
     # Function to unzip file
     zip_path = Path(zip_path)
+    # define destination directory
+    # parent dir of zip file by default
     if dest_dir is None:
         dest_dir = zip_path.parent
         if create_directory:
@@ -127,6 +131,7 @@ def unzip_file(zip_path: Union[str, Path], dest_dir: Union[str, Path] = None, de
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(dest_dir)
         for name in zip_ref.namelist():
+            # extract to proper path
             clean_name = name.lstrip("/\\")
             full_path = dest_dir / clean_name
             extracted_paths.append(full_path)

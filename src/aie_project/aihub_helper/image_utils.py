@@ -41,6 +41,7 @@ def resize_images_parallel(file_paths: List[Path], target_size=(768, 768), max_w
     # resize images using all available CPU cores
     worker_with_args = partial(resize_worker, target_size=target_size, quality=85)
 
+    # uses all available CPU cores if max_workers is None
     with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
         results = list(executor.map(worker_with_args, file_paths))
 
