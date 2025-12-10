@@ -87,3 +87,6 @@ uv tool run wandb login
 ```bash
 ./scripts/train.sh
 ```
+
+#### Model Inference with Pretrained Weights
+Run the inference script at `./scripts/eval.sh`. It will download the model weights automatically and run inference on the validation set automatically. The dataset or the cache needs to be pre downloaded for this script to run.

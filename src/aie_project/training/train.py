@@ -1,4 +1,5 @@
 import argparse
+import os
 from pathlib import Path
 
 import numpy as np
@@ -57,6 +58,7 @@ def train(
     # assume GPU count is 1 here
     epoch_steps = len(train_ds) // batch_size
     eval_steps = epoch_steps // 4  # evaluate 4 times per epoch
+    is_linux = os.system("test $(uname) = Linux") == 0
     args = TrainingArguments(
         run_name=f"ai-experiment-project-final",
         seed=random_seed,
@@ -77,8 +79,8 @@ def train(
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=384,  # fixed because it doesn't affect training
         num_train_epochs=16,
-        dataloader_num_workers=16,
-        dataloader_prefetch_factor=2,
+        dataloader_num_workers=16 if is_linux else 0,
+        dataloader_prefetch_factor=2 if is_linux else None,
         label_smoothing_factor=0.1,
         max_grad_norm=0.5, # stabilize training
         optim="adamw_torch",
@@ -86,7 +88,7 @@ def train(
         fp16=False,
         push_to_hub=False,
         remove_unused_columns=False,
-        report_to=["wandb"],
+        report_to=["wandb"] if train else None,
         label_names=["labels_1", "labels_2"],
     )
 
