@@ -33,6 +33,10 @@ class EfficientMultiTaskClassificationConfig(PretrainedConfig):
         self.classifier_dropout = classifier_dropout
         self.in_features = in_features
         self.has_internal_pooling = has_internal_pooling
+
+        kwargs.pop("id2label", None)
+        kwargs.pop("label2id", None)
+
         super().__init__(
             label2id=label2id_1,
             id2label=id2label_1,
